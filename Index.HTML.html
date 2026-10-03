@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pharma Machinery Order Form Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#e8eef0;--panel:#fff;--ink:#10303a;--mute:#5b7580;--line:#c9d6da;--accent:#0b6e75;--accent-ink:#fff;--warn:#c4560a;--soft:#f2f6f7}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a1e;--panel:#162529;--ink:#e3eef0;--mute:#8fa8b0;--line:#2b4249;--accent:#3bb5bd;--accent-ink:#06191c;--warn:#f0954f;--soft:#1b2d32}}
+:root[data-theme="dark"]{--bg:#0e1a1e;--panel:#162529;--ink:#e3eef0;--mute:#8fa8b0;--line:#2b4249;--accent:#3bb5bd;--accent-ink:#06191c;--warn:#f0954f;--soft:#1b2d32}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Instrument Sans",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(24px,4vw,34px);margin:0 0 4px;letter-spacing:-.02em}
+.lead{color:var(--mute);margin:0 0 20px;max-width:60ch}
+.grid{display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+fieldset{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:0 0 14px;padding:16px}
+legend{font-weight:600;padding:0 6px;font-size:16px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+label{display:block;font-size:13px;color:var(--mute);font-weight:500}
+input,select,textarea{width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--ink);font:inherit}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.line{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--soft)}
+.line .top{display:grid;grid-template-columns:1fr 90px auto;gap:10px;align-items:end}
+@media(max-width:560px){.line .top{grid-template-columns:1fr 80px}.line .top button{grid-column:1/-1}}
+.opts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px}
+.opts label{display:flex;align-items:center;gap:6px;color:var(--ink);font-size:13px}
+.opts input{width:auto;margin:0}
+.spec{font-size:12.5px;color:var(--mute);margin-top:8px}
+.price{font-weight:600;text-align:right;margin-top:6px}
+button{font:inherit;cursor:pointer;border-radius:6px;padding:9px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.rm{color:var(--warn)}
+.sum{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.sum h2{margin:0 0 10px;font-size:16px}
+.sum dl{margin:0}.sum dl div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line)}
+.sum dt{color:var(--mute)}.sum dd{margin:0;font-variant-numeric:tabular-nums}
+.sum .tot{font-size:20px;font-weight:700;border:0;padding-top:10px}
+.sum button{width:100%;margin-top:10px}
+.err{color:var(--warn);font-size:13px;margin-top:8px;min-height:1em}
+#sheet{display:none;background:#fff;color:#111;border:1px solid var(--line);border-radius:10px;padding:28px;margin-top:18px}
+#sheet h2{margin:0}#sheet table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+#sheet th,#sheet td{border-bottom:1px solid #ccd;padding:6px 8px;text-align:left;vertical-align:top}
+#sheet td.n,#sheet th.n{text-align:right;white-space:nowrap}
+#sheet .meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:#345;font-size:14px}
+#sheet .sign{display:flex;gap:40px;margin-top:50px;font-size:13px}#sheet .sign div{flex:1;border-top:1px solid #333;padding-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+@media print{body{background:#fff}.wrap>*:not(#sheet){display:none!important}#sheet{display:block!important;border:0;padding:0;margin:0}.actions{display:none}:root{padding:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Machinery order form generator</h1>
+  <p class="lead">Fill in the customer and machine details to get a priced order sheet you can print, save as PDF, or copy into an email.</p>
+
+  <div class="grid">
+    <div>
+      <fieldset><legend>Customer</legend>
+        <div class="row">
+          <label>Company name<input id="company" autocomplete="organization"></label>
+          <label>Contact person<input id="contact" autocomplete="name"></label>
+          <label>Phone<input id="phone" type="tel" autocomplete="tel"></label>
+          <label>Email<input id="email" type="email" autocomplete="email"></label>
+          <label>Drug licence no.<input id="licence"></label>
+          <label>GSTIN<input id="gstin" maxlength="15"></label>
+        </div>
+        <label style="margin-top:12px">Delivery address<textarea id="addr" rows="2"></textarea></label>
+      </fieldset>
+
+      <fieldset><legend>Machines</legend>
+        <div id="lines"></div>
+        <button type="button" id="add">Add machine</button>
+      </fieldset>
+
+      <fieldset><legend>Terms</legend>
+        <div class="row">
+          <label>Payment terms
+            <select id="pay"><option>50% advance, 50% before dispatch</option><option>30% advance, 60% before dispatch, 10% after commissioning</option><option>100% advance</option><option>LC at sight</option></select></label>
+          <label>Required delivery date<input id="date" type="date"></label>
+          <label>Currency<select id="cur"><option value="INR">INR (₹)</option></select></label>
+        </div>
+        <label style="margin-top:12px">Special requirements (voltage, cleanroom class, URS reference)<textarea id="notes" rows="3"></textarea></label>
+      </fieldset>
+    </div>
+
+    <aside class="sum" aria-live="polite">
+      <h2>Order summary</h2>
+      <dl>
+        <div><dt>Machines</dt><dd id="s-count">0</dd></div>
+        <div><dt>Subtotal</dt><dd id="s-sub">₹0</dd></div>
+        <div><dt>GST 18%</dt><dd id="s-gst">₹0</dd></div>
+        <div class="tot"><dt>Total</dt><dd id="s-tot">₹0</dd></div>
+      </dl>
+      <button class="primary" id="gen" type="button">Generate order sheet</button>
+      <div class="err" id="err" role="alert"></div>
+    </aside>
+  </div>
+
+  <section id="sheet" aria-label="Order sheet"></section>
+</div>
+
+<script>
+const CATALOG=[
+ {id:"tab",name:"Rotary tablet press, 27 station",price:850000,spec:"Output up to 150,000 tablets/hr, SS316L contact parts"},
+ {id:"cap",name:"Semi-automatic capsule filler",price:320000,spec:"Size 00 to 4, up to 25,000 capsules/hr"},
+ {id:"blis",name:"Blister packing machine",price:1200000,spec:"Alu-PVC / Alu-Alu, up to 40 cycles/min"},
+ {id:"coat",name:"Automatic coating pan, 48 inch",price:475000,spec:"Perforated pan with spray gun and hot-air unit"},
+ {id:"blend",name:"Octagonal blender, 500 L",price:290000,spec:"SS316L contact, variable speed drive"},
+ {id:"fbd",name:"Fluid bed dryer, 120 kg",price:640000,spec:"Bowl with bag filter, PLC control"},
+ {id:"vial",name:"Vial filling and sealing line",price:1850000,spec:"Up to 120 vials/min, 2 to 30 ml"},
+ {id:"auto",name:"Horizontal autoclave, 300 L",price:360000,spec:"Double door, validated sterilization cycles"}
+];
+const OPTS=[
+ {id:"inst",label:"Installation and commissioning (+5%)",pct:.05},
+ {id:"amc",label:"2-year AMC (+8%)",pct:.08},
+ {id:"gmp",label:"Upgraded GMP finish and contact parts (+10%)",pct:.10},
+ {id:"iq",label:"IQ/OQ documentation (+₹25,000)",flat:25000}
+];
+const $=id=>document.getElementById(id);
+const inr=n=>"₹"+Math.round(n).toLocaleString("en-IN");
+let lines=[],uid=0;
+
+function addLine(){lines.push({k:++uid,m:CATALOG[0].id,q:1,o:[]});render()}
+function lineTotal(l){const m=CATALOG.find(x=>x.id===l.m);let u=m.price;
+ OPTS.forEach(o=>{if(l.o.includes(o.id))u+=o.pct?m.price*o.pct:o.flat});return u*l.q}
+function render(){
+ $("lines").innerHTML=lines.map(l=>{const m=CATALOG.find(x=>x.id===l.m);
+  return `<div class="line" data-k="${l.k}">
+  <div class="top">
+   <label>Machine<select data-f="m">${CATALOG.map(c=>`<option value="${c.id}" ${c.id===l.m?"selected":""}>${c.name} (${inr(c.price)})</option>`).join("")}</select></label>
+   <label>Qty<input data-f="q" type="number" min="1" max="99" value="${l.q}"></label>
+   <button type="button" class="rm" data-rm>Remove</button>
+  </div>
+  <div class="spec">${m.spec}</div>
+  <div class="opts">${OPTS.map(o=>`<label><input type="checkbox" data-o="${o.id}" ${l.o.includes(o.id)?"checked":""}>${o.label}</label>`).join("")}</div>
+  <div class="price">${inr(lineTotal(l))}</div></div>`}).join("")||'<p class="spec">No machines yet. Add one to start the order.</p>';
+ totals()}
+function totals(){const sub=lines.reduce((a,l)=>a+lineTotal(l),0);
+ $("s-count").textContent=lines.reduce((a,l)=>a+l.q,0);
+ $("s-sub").textContent=inr(sub);$("s-gst").textContent=inr(sub*.18);$("s-tot").textContent=inr(sub*1.18)}
+
+$("lines").addEventListener("change",e=>{
+ const box=e.target.closest(".line");if(!box)return;const l=lines.find(x=>x.k==box.dataset.k);
+ if(e.target.dataset.f==="m")l.m=e.target.value;
+ if(e.target.dataset.f==="q")l.q=Math.max(1,Math.min(99,parseInt(e.target.value)||1));
+ if(e.target.dataset.o){const i=l.o.indexOf(e.target.dataset.o);i>-1?l.o.splice(i,1):l.o.push(e.target.dataset.o)}
+ render()});
+$("lines").addEventListener("click",e=>{if(e.target.dataset.rm!==undefined){
+ const k=e.target.closest(".line").dataset.k;lines=lines.filter(x=>x.k!=k);render()}});
+$("add").onclick=addLine;
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function orderText(no){
+ const v=id=>$(id).value.trim();const sub=lines.reduce((a,l)=>a+lineTotal(l),0);
+ let t=`ORDER ${no}\nCustomer: ${v("company")} (${v("contact")})\nPhone: ${v("phone")} | Email: ${v("email")}\nGSTIN: ${v("gstin")||"-"} | Drug licence: ${v("licence")||"-"}\nDeliver to: ${v("addr")}\n\n`;
+ lines.forEach((l,i)=>{const m=CATALOG.find(x=>x.id===l.m);
+  t+=`${i+1}. ${m.name} x ${l.q}${l.o.length?" ["+l.o.map(id=>OPTS.find(o=>o.id===id).label.replace(/ \(.*/,"")).join(", ")+"]":""} = ${inr(lineTotal(l))}\n`});
+ return t+`\nSubtotal ${inr(sub)}\nGST 18% ${inr(sub*.18)}\nTotal ${inr(sub*1.18)}\nPayment: ${$("pay").value}\nDelivery by: ${v("date")||"to be confirmed"}\nNotes: ${v("notes")||"-"}`}
+
+$("gen").onclick=()=>{
+ const err=$("err");err.textContent="";const v=id=>$(id).value.trim();
+ if(!v("company")||!v("contact")){err.textContent="Enter the company name and contact person.";return}
+ if(!/^\S+@\S+\.\S+$/.test(v("email"))){err.textContent="Enter a valid email address.";return}
+ if(!v("phone")){err.textContent="Enter a phone number.";return}
+ if(!lines.length){err.textContent="Add at least one machine.";return}
+ const d=new Date(),p=n=>String(n).padStart(2,"0");
+ const no=`PM-${String(d.getFullYear()).slice(2)}${p(d.getMonth()+1)}${p(d.getDate())}-${Math.floor(1000+Math.random()*9000)}`;
+ const sub=lines.reduce((a,l)=>a+lineTotal(l),0);
+ const rows=lines.map((l,i)=>{const m=CATALOG.find(x=>x.id===l.m);
+  return `<tr><td>${i+1}</td><td><b>${esc(m.name)}</b><br><small>${esc(m.spec)}${l.o.length?"<br>Add-ons: "+l.o.map(id=>esc(OPTS.find(o=>o.id===id).label.replace(/ \(.*/,""))).join(", "):""}</small></td><td class="n">${l.q}</td><td class="n">${inr(lineTotal(l))}</td></tr>`}).join("");
+ $("sheet").innerHTML=`<div class="meta"><div><h2>Purchase order ${no}</h2>Date: ${d.toLocaleDateString("en-IN")}</div>
+  <div><b>${esc(v("company"))}</b><br>${esc(v("contact"))}<br>${esc(v("phone"))} | ${esc(v("email"))}<br>GSTIN: ${esc(v("gstin")||"-")}<br>Drug licence: ${esc(v("licence")||"-")}</div></div>
+  <p><b>Deliver to:</b> ${esc(v("addr")||"-")}</p>
+  <table><tr><th>#</th><th>Machine</th><th class="n">Qty</th><th class="n">Amount</th></tr>${rows}
+  <tr><td></td><td class="n" colspan="2">Subtotal</td><td class="n">${inr(sub)}</td></tr>
+  <tr><td></td><td class="n" colspan="2">GST 18%</td><td class="n">${inr(sub*.18)}</td></tr>
+  <tr><td></td><td class="n" colspan="2"><b>Total</b></td><td class="n"><b>${inr(sub*1.18)}</b></td></tr></table>
+  <p><b>Payment terms:</b> ${esc($("pay").value)}<br><b>Required delivery:</b> ${esc(v("date")||"To be confirmed")}<br><b>Special requirements:</b> ${esc(v("notes")||"None")}</p>
+  <div class="sign"><div>Customer signature and stamp</div><div>Authorised signatory</div></div>
+  <div class="actions"><button class="primary" id="prt">Print or save as PDF</button><button id="cpy">Copy as text</button></div>`;
+ $("sheet").style.display="block";$("sheet").scrollIntoView({behavior:"smooth"});
+ $("prt").onclick=()=>window.print();
+ $("cpy").onclick=async()=>{try{await navigator.clipboard.writeText(orderText(no));$("cpy").textContent="Copied"}catch(e){$("cpy").textContent="Copy failed"}};
+};
+addLine();
+</script>
+</body>
+</html>
